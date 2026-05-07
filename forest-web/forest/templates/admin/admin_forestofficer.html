@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AgriShield | Officers Management</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+    body{display:flex;height:100vh;background:#f4f7f6;overflow:hidden}
+
+    /* Sidebar */
+    .sidebar{
+      width:240px;background:#2e7d32;color:#fff;display:flex;flex-direction:column;padding:22px 0;
+      animation:slideInLeft .5s ease both;
+    }
+    .sidebar h2{text-align:center;margin-bottom:22px;font-size:20px;letter-spacing:.3px}
+    .sidebar a{color:#fff;text-decoration:none;padding:12px 22px;display:block;transition:background .18s,transform .18s}
+    .sidebar a:hover{background:#1b5e20;transform:translateX(6px)}
+
+    /* Main */
+    .main{flex:1;display:flex;flex-direction:column;overflow:auto}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;padding:18px 26px;background:#fff;
+      box-shadow:0 2px 6px rgba(0,0,0,.06); animation:fadeDown .45s ease both;
+    }
+    .title{color:#2e7d32;font-size:20px;font-weight:600}
+    .btn{background:#2e7d32;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;transition:transform .14s}
+    .btn:hover{transform:translateY(-3px)}
+    .ghost{background:transparent;color:#2e7d32;border:1px solid #cfead7}
+
+    .content{padding:24px}
+    h2{color:#2e7d32;margin-bottom:14px}
+
+    .controls{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .controls input,.controls select{padding:10px 12px;border-radius:8px;border:1px solid #ddd;min-width:140px}
+    .controls .spacer{flex:1}
+
+    .card{background:#fff;padding:14px;border-radius:12px;box-shadow:0 4px 14px rgba(18,55,22,0.05);overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:#2e7d32;color:#fff;padding:12px 14px;text-align:left}
+    tbody td{padding:12px 14px;border-bottom:1px solid #eee}
+    tbody tr{transition:transform .18s,background .18s}
+    tbody tr:hover{transform:translateY(-4px);background:#f6fff5}
+    .actions button{margin-right:8px;padding:7px 10px;border-radius:8px;border:0;cursor:pointer;color:#fff}
+    .edit-btn{background:#0288d1}
+    .delete-btn{background:#c62828}
+
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:#e8f6ea;color:#2e7d32;font-weight:600;font-size:13px}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;justify-content:center;align-items:center;z-index:60}
+    .overlay.show{display:flex;animation:fadeIn .18s ease}
+    .modal{width:520px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 12px 40px rgba(15,40,15,0.18);transform:translateY(10px);opacity:0;animation:popIn .25s forwards}
+    .modal h3{color:#2e7d32;margin-bottom:12px;text-align:center}
+    .modal .field{margin-bottom:10px}
+    .modal label{display:block;color:#666;margin-bottom:6px;font-size:13px}
+    .modal input,.modal select{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd}
+    .modal .row{display:flex;gap:10px}
+    .modal .row .half{flex:1}
+    .modal .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+    .empty{padding:36px;text-align:center;color:#666}
+    .muted{color:#666;font-size:13px}
+
+    /* small helper style for masked password display */
+    .pw-mask{font-family:monospace;letter-spacing:2px}
+
+    @keyframes slideInLeft{from{transform:translateX(-260px);opacity:0}to{transform:none;opacity:1}}
+    @keyframes fadeDown{from{transform:translateY(-12px);opacity:0}to{transform:none;opacity:1}}
+    @keyframes popIn{to{transform:none;opacity:1}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+    @media(max-width:880px){.modal{width:92%}.sidebar{display:none}.content{padding:16px}}
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>AgriShield</h2>
+    <a href="admin_dashboard.html">🏠 Dashboard</a>
+    <a href="admin_divisions.html">🌳 Divisions</a>
+    <a href="admin_officers.html">👮 Officers</a>
+    <a href="admin_alerts.html">⚠️ Alerts</a>
+    <a href="admin_reports.html">📊 Reports</a>
+    <a href="admin_login.html">🚪 Logout</a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="title">Forest Officers Management</div>
+      <div>
+        <button class="btn ghost" onclick="downloadCSV()">Export CSV</button>
+        <button class="btn" onclick="openModal()">+ Add Officer</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>Manage Officers</h2>
+
+      <div class="controls">
+        <input id="searchInput" placeholder="Search by name, division, username..." oninput="renderTable()" />
+        <select id="sortSelect" onchange="renderTable()">
+          <option value="id">Sort: ID</option>
+          <option value="name">Sort: Name</option>
+          <option value="division">Sort: Division</option>
+        </select>
+        <div class="spacer"></div>
+        <span class="badge" id="countBadge">0 Officers</span>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Division</th><th>Contact</th><th>Email</th><th>Username</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="officerBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty" style="display:none">
+          <p><strong>No officers yet.</strong></p>
+{#          <p>Click <a href="/myapp/addforestofficer_get/">+ Add Officer</a> to create one.</p>#}
+             <a href="/myapp/addforestofficer_get/" class="btn btb-info">+ Add Officer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+{#  <div class="overlay" id="modalOverlay" aria-hidden="true">#}
+{#    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">#}
+{#      <h3 id="modalTitle">Add Officer</h3>#}
+{##}
+{#      <div class="field">#}
+{#        <label for="inpName">Officer Name</label>#}
+{#        <input id="inpName" type="text" placeholder="Full name (e.g., Arun Kumar)" />#}
+{#      </div>#}
+{##}
+{#      <div class="field">#}
+{#        <label for="inpDivision">Division Assigned</label>#}
+{#        <select id="inpDivision"></select>#}
+{#      </div>#}
+{##}
+{#      <div class="row">#}
+{#        <div class="field half">#}
+{#          <label for="inpContact">Contact Number</label>#}
+{#          <input id="inpContact" type="text" placeholder="9876543210" />#}
+{#        </div>#}
+{#        <div class="field half">#}
+{#          <label for="inpEmail">Email</label>#}
+{#          <input id="inpEmail" type="email" placeholder="officer@forest.gov.in" />#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <div class="row">#}
+{#        <div class="field half">#}
+{#          <label for="inpUsername">Username</label>#}
+{#          <input id="inpUsername" type="text" placeholder="username" />#}
+{#        </div>#}
+{#        <div class="field half">#}
+{#          <label for="inpPassword">Password</label>#}
+{#          <div style="display:flex;gap:8px">#}
+{#            <input id="inpPassword" type="password" placeholder="password" style="flex:1" />#}
+{#            <button class="btn ghost" type="button" onclick="toggleShowPassword()" id="pwToggle">Show</button>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <div class="modal-actions">#}
+{#        <button class="btn ghost" onclick="closeModal()">Cancel</button>#}
+{#        <button class="btn" id="saveBtn" onclick="saveOfficer()">Save Officer</button>#}
+{#      </div>#}
+{#      <p class="muted" style="margin-top:10px">Passwords are stored client-side for demo — add secure hashing and backend storage in production.</p>#}
+{#    </div>#}
+{#  </div>#}
+
+{#  <script>#}
+{#    // Data keys and initial load#}
+{#    const OFFICER_KEY = "officers";#}
+{#    const DIV_KEY = "divisions";#}
+{#    let officers = JSON.parse(localStorage.getItem(OFFICER_KEY) || "[]");#}
+{#    let divisions = JSON.parse(localStorage.getItem(DIV_KEY) || "[]");#}
+{#    // fallback sample divisions if not present#}
+{#    if(!divisions || divisions.length === 0) {#}
+{#      divisions = [#}
+{#        { id: "d1", name: "Wayanad Division", location: "Kerala", notes: "" },#}
+{#        { id: "d2", name: "Nilambur Division", location: "Kerala", notes: "" },#}
+{#        { id: "d3", name: "Palakkad Division", location: "Kerala", notes: "" }#}
+{#      ];#}
+{#      localStorage.setItem(DIV_KEY, JSON.stringify(divisions));#}
+{#    }#}
+{##}
+{#    let editId = null;#}
+{##}
+{#    // DOM refs#}
+{#    const inpDivision = document.getElementById("inpDivision");#}
+{#    const officerBody = document.getElementById("officerBody");#}
+{#    const countBadge = document.getElementById("countBadge");#}
+{##}
+{#    function populateDivisionDropdown() {#}
+{#      inpDivision.innerHTML = "";#}
+{#      const blank = document.createElement("option");#}
+{#      blank.value = "";#}
+{#      blank.textContent = "Select Division";#}
+{#      inpDivision.appendChild(blank);#}
+{#      divisions.forEach(d => {#}
+{#        const o = document.createElement("option");#}
+{#        o.value = d.id;#}
+{#        o.textContent = d.name;#}
+{#        inpDivision.appendChild(o);#}
+{#      });#}
+{#    }#}
+{##}
+{#    function renderTable() {#}
+{#      const tbody = officerBody;#}
+{#      tbody.innerHTML = "";#}
+{#      let filtered = [...officers];#}
+{##}
+{#      const q = document.getElementById("searchInput").value.toLowerCase();#}
+{#      if(q) {#}
+{#        filtered = filtered.filter(o =>#}
+{#          o.name.toLowerCase().includes(q) ||#}
+{#          getDivisionName(o.division).toLowerCase().includes(q) ||#}
+{#          (o.username||"").toLowerCase().includes(q)#}
+{#        );#}
+{#      }#}
+{##}
+{#      const sortBy = document.getElementById("sortSelect").value;#}
+{#      filtered.sort((a,b) => {#}
+{#        if(sortBy === "id") return a.id.localeCompare(b.id);#}
+{#        if(sortBy === "name") return a.name.localeCompare(b.name);#}
+{#        if(sortBy === "division") return getDivisionName(a.division).localeCompare(getDivisionName(b.division));#}
+{#        return 0;#}
+{#      });#}
+{##}
+{#      countBadge.textContent = `${filtered.length} Officers`;#}
+{#      document.getElementById("emptyState").style.display = filtered.length ? "none" : "block";#}
+{##}
+{#      filtered.forEach(o => {#}
+{#        const tr = document.createElement("tr");#}
+{#        tr.innerHTML = `#}
+{#          <td>${o.id}</td>#}
+{#          <td>${o.name}</td>#}
+{#          <td>${escapeHtml(getDivisionName(o.division))}</td>#}
+{#          <td>${escapeHtml(o.contact)}</td>#}
+{#          <td>${escapeHtml(o.email)}</td>#}
+{#          <td>${escapeHtml(o.username)}</td>#}
+{#          <td class="actions">#}
+{#            <button class="edit-btn" onclick="editOfficer('${o.id}')">Edit</button>#}
+{#            <button class="delete-btn" onclick="deleteOfficer('${o.id}')">Delete</button>#}
+{#          </td>`;#}
+{#        tbody.appendChild(tr);#}
+{#      });#}
+{#    }#}
+{##}
+{#    // Utility#}
+{#    function getDivisionName(id) {#}
+{#      const d = divisions.find(x => x.id === id);#}
+{#      return d ? d.name : "—";#}
+{#    }#}
+{##}
+{#    function escapeHtml(s) {#}
+{#      if(!s) return "";#}
+{#      return String(s)#}
+{#        .replace(/&/g, "&amp;")#}
+{#        .replace(/</g, "&lt;")#}
+{#        .replace(/>/g, "&gt;")#}
+{#        .replace(/"/g, "&quot;");#}
+{#    }#}
+{##}
+{#    // Modal controls#}
+{#    function openModal(edit=false){#}
+{#      document.getElementById("modalOverlay").classList.add("show");#}
+{#      document.getElementById("modalOverlay").setAttribute("aria-hidden","false");#}
+{#      document.getElementById("modalTitle").textContent = edit ? "Edit Officer" : "Add Officer";#}
+{#      if(!edit) clearModalFields();#}
+{#    }#}
+{#    function closeModal(){#}
+{#      document.getElementById("modalOverlay").classList.remove("show");#}
+{#      document.getElementById("modalOverlay").setAttribute("aria-hidden","true");#}
+{#      clearModalFields();#}
+{#      editId = null;#}
+{#      document.getElementById("inpPassword").type = "password";#}
+{#      document.getElementById("pwToggle").textContent = "Show";#}
+{#    }#}
+{#    function clearModalFields(){#}
+{#      document.getElementById("inpName").value = "";#}
+{#      document.getElementById("inpDivision").value = "";#}
+{#      document.getElementById("inpContact").value = "";#}
+{#      document.getElementById("inpEmail").value = "";#}
+{#      document.getElementById("inpUsername").value = "";#}
+{#      document.getElementById("inpPassword").value = "";#}
+{#    }#}
+{##}
+{#    // Save / Edit#}
+{#    function saveOfficer(){#}
+{#      const name = document.getElementById("inpName").value.trim();#}
+{#      const division = document.getElementById("inpDivision").value;#}
+{#      const contact = document.getElementById("inpContact").value.trim();#}
+{#      const email = document.getElementById("inpEmail").value.trim();#}
+{#      const username = document.getElementById("inpUsername").value.trim();#}
+{#      const password = document.getElementById("inpPassword").value;#}
+{##}
+{#      if(!name || !division || !contact || !email || !username || !password){#}
+{#        alert("Please fill all required fields.");#}
+{#        return;#}
+{#      }#}
+{##}
+{#      // Basic validation (client-side)#}
+{#      if(!/^\d{6,15}$/.test(contact)) {#}
+{#        if(!confirm("Contact doesn't look like a normal phone number. Continue?")) return;#}
+{#      }#}
+{#      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {#}
+{#        if(!confirm("Email doesn't look valid. Continue?")) return;#}
+{#      }#}
+{##}
+{#      if(editId){#}
+{#        // update#}
+{#        const idx = officers.findIndex(o => o.id === editId);#}
+{#        if(idx === -1) return;#}
+{#        officers[idx] = { id: editId, name, division, contact, email, username, password }; // password stored client-side (demo)#}
+{#      } else {#}
+{#        // create#}
+{#        const id = "o" + Date.now().toString().slice(-6);#}
+{#        officers.push({ id, name, division, contact, email, username, password });#}
+{#      }#}
+{##}
+{#      localStorage.setItem(OFFICER_KEY, JSON.stringify(officers));#}
+{#      closeModal();#}
+{#      renderTable();#}
+{#    }#}
+{##}
+{#    function editOfficer(id){#}
+{#      const o = officers.find(x => x.id === id);#}
+{#      if(!o) return;#}
+{#      editId = id;#}
+{#      document.getElementById("inpName").value = o.name;#}
+{#      document.getElementById("inpDivision").value = o.division;#}
+{#      document.getElementById("inpContact").value = o.contact;#}
+{#      document.getElementById("inpEmail").value = o.email;#}
+{#      document.getElementById("inpUsername").value = o.username;#}
+{#      document.getElementById("inpPassword").value = o.password || "";#}
+{#      openModal(true);#}
+{#    }#}
+{##}
+{#    function deleteOfficer(id){#}
+{#      if(!confirm("Delete this officer?")) return;#}
+{#      officers = officers.filter(x => x.id !== id);#}
+{#      localStorage.setItem(OFFICER_KEY, JSON.stringify(officers));#}
+{#      renderTable();#}
+{#    }#}
+{##}
+{#    // CSV export#}
+{#    function downloadCSV(){#}
+{#      if(officers.length === 0){ alert("No officers to export"); return; }#}
+{#      const header = ["ID","Name","Division","Contact","Email","Username"];#}
+{#      const rows = officers.map(o => [o.id, o.name, getDivisionName(o.division), o.contact, o.email, o.username]);#}
+{#      let csv = header.join(",") + "\n" + rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(",")).join("\n");#}
+{#      const blob = new Blob([csv], {type:"text/csv"});#}
+{#      const a = document.createElement("a");#}
+{#      a.href = URL.createObjectURL(blob);#}
+{#      a.download = "officers.csv";#}
+{#      a.click();#}
+{#    }#}
+{##}
+{#    // Helpers#}
+{#    function toggleShowPassword(){#}
+{#      const pw = document.getElementById("inpPassword");#}
+{#      const btn = document.getElementById("pwToggle");#}
+{#      if(pw.type === "password"){ pw.type = "text"; btn.textContent = "Hide"; } else { pw.type = "password"; btn.textContent = "Show"; }#}
+{#    }#}
+{##}
+{#    // Init#}
+{#    function init(){#}
+{#      populateDivisionDropdown();#}
+{#      renderTable();#}
+{#    }#}
+{##}
+{#    // Run on load#}
+{#    init();#}
+{##}
+{#    // Expose some functions for HTML onclick attributes#}
+{#    window.openModal = openModal;#}
+{#    window.closeModal = closeModal;#}
+{#    window.saveOfficer = saveOfficer;#}
+{#    window.editOfficer = editOfficer;#}
+{#    window.deleteOfficer = deleteOfficer;#}
+{#    window.downloadCSV = downloadCSV;#}
+{#    window.toggleShowPassword = toggleShowPassword;#}
+{#    // For search input and sort select we rely on renderTable being called from HTML attributes#}
+{#  </script>#}
+</body>
+</html>

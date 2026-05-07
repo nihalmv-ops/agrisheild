@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Complaint</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+{% extends 'admin/adminhome.html' %}
+{% block body %}
+  <div class="container mt-5">
+    <h4 class="mb-4">Send replay</h4>
+    <form method="post" action="/myapp/sendreplay_post/#a">
+        {% csrf_token %}
+
+        <input type="hidden" value="{{ data.id }}" name="id">
+
+
+      <!-- Complaint Text -->
+      <div class="mb-3">
+        <label for="complaint" class="form-label">Replay</label>
+        <textarea class="form-control" name="replay" id="replay" rows="4" placeholder="Write your complaint here..." required></textarea>
+      </div>
+
+      <!-- Optional File Upload -->
+
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-primary">Send Replay</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+</body>
+</html>
