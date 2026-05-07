@@ -1,16 +1,114 @@
-# forest_managment
+# 🌿 AgriShield
 
-A new Flutter project.
+A smart forest management and monitoring system developed using Flutter and SQL database technology.
+AgriShield helps manage forest activities, complaints, alerts, products, and environmental monitoring through a modern digital platform.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+* 🔐 Secure Login & Registration
+* 🌳 Forest Monitoring System
+* 📢 Complaint Management
+* 📍 GPS & Location Tracking
+* 🛒 Forest Product Management
+* 📊 Admin Dashboard
+* 📱 Responsive Flutter UI
+* 🗄 SQL Database Integration
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠 Technologies Used
+
+### Frontend
+
+* Flutter
+* Dart
+
+### Backend
+
+* Python / Django
+* SQL Database
+
+### Tools
+
+* PyCharm
+* Git & GitHub
+
+---
+
+## 📂 Project Structure
+
+```bash
+agrisheild/
+│
+├── android/
+├── ios/
+├── lib/
+├── assets/
+├── templates/
+├── static/
+├── database/
+└── README.md
+```
+
+---
+
+## ⚙️ Installation
+
+### Clone Repository
+
+```bash
+git clone https://github.com/nihalmv-ops/agrisheild.git
+```
+
+### Open Project
+
+```bash
+cd agrisheild
+```
+
+### Install Dependencies
+
+```bash
+flutter pub get
+```
+
+### Run Application
+
+```bash
+flutter run
+```
+
+---
+
+## 📸 Screenshots
+
+*Add your project screenshots here*
+
+| Home Page                     | Dashboard                               |
+| ----------------------------- | --------------------------------------- |
+| ![Home](screenshots/home.png) | ![Dashboard](screenshots/dashboard.png) |
+
+---
+
+## 🎯 Future Enhancements
+
+* AI-Based Forest Fire Detection
+* Real-Time Alert System
+* Cloud Database Integration
+* Live GPS Tracking
+* Online Payment Gateway
+
+---
+
+## 👨‍💻 Developer
+
+**Nihal MV**
+📧 [nihalmv86@gmail.com](mailto:nihalmv86@gmail.com)
+
+---
+
+## 📄 License
+
+This project is developed for educational and academic purposes.
